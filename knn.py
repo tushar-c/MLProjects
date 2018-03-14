@@ -43,10 +43,6 @@ def knn(X, Y, test_features, test_labels, k=5):
     return sq_error / len(estimates)
 
 
-
-trials = 10
-lr_errors = []
-sklr_errors = []
 pre_data = process_data.get_data()
 data = process_data.process_data(pre_data)
 features = data[0]
