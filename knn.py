@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import random
 import process_data
-from sklearn.linear_model import LinearRegression
 
 
 def get_min(x, k=5):
