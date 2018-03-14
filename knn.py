@@ -8,10 +8,13 @@ import process_data
 # get the k minimum entries
 def get_min(x, k=5):
     minimums = []
+    # index '1' contains the norms
     data = [j[1] for j in x]
     for i in range(k):
         min = np.min(data)
+        # keep track of the corresponding data point, the corresponding minimum, and the index of minimum occurence
         minimums.append((x[data.index(min)], min, data.index(min)))
+        # remove current min to get ride of 'duplicates'
         data.remove(min)
     return minimums
 
