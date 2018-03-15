@@ -3,11 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import random
 import process_data
-<<<<<<< HEAD
-from sklearn.linear_model import LinearRegression
-
-=======
->>>>>>> 1ffb4591fe66ba3106a70c6392a0ab0a817c8b4e
 
 
 # OLS Linear Regression
@@ -31,10 +26,7 @@ def linear_regression(X, Y, X_, Y_):
     return (B, error, predictions)
 
 
-<<<<<<< HEAD
-=======
 # fetch and clean the data
->>>>>>> 1ffb4591fe66ba3106a70c6392a0ab0a817c8b4e
 pre_data = process_data.get_data()
 data = process_data.process_data(pre_data)
 features = data[0]
