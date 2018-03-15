@@ -1,3 +1,6 @@
+import random
+
+
 def get_data():
     file = open('data.txt', 'r')
     file_data = file.read().split("\n")
@@ -37,4 +40,19 @@ def process_data(pre_data):
             test_data.append(0)
     return (train_data, test_data)
 
-    
+
+
+def process_data_2(pre_data):
+    train_data = []
+    test_data = []
+    for d in pre_data[0]:
+        sub_data = []
+        for entry in d:
+            sub_data.append(float(entry))
+        train_data.append(sub_data)
+    for d in pre_data[1]:
+        if d == "setosa":
+            test_data.append(np.array([1, 0]).reshape(2,1))
+        elif d == "versicolor":
+            test_data.append(np.array([0, 1]).reshape(2, 1))
+    return (train_data, test_data)
