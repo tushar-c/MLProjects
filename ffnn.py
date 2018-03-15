@@ -43,7 +43,7 @@ def norm(x):
     return np.power(np.sum(np.power(x, 2)), 1/2)
 
 
-def forward_pass(X, weights, biases):
+def forward_prop(X, weights, biases):
     activations = []
     f_1 = np.matmul(weights[0], X) + biases[0]
     af_1 = sigmoid(f_1)
@@ -54,7 +54,7 @@ def forward_pass(X, weights, biases):
     return [output, activations]
 
 
-def backward_pass(X, Y, Y_, activations, weights, biases, eta):
+def backward_prop(X, Y, Y_, activations, weights, biases, eta):
     g = grad_mse(X, Y, Y_)
     G = g * sigmoid(activations[1])
     w_2 = np.matmul(G, activations[0].T)
@@ -79,8 +79,8 @@ def train_net(features, labels, weights, biases, eta=0.02, epochs=500):
         for f in range(len(features)):
             votes = []
             data_point = features[f].ravel().reshape(features[f].shape[0], 1)
-            predict = forward_pass(data_point, weights, biases)
-            gradients = backward_pass(data_point, labels[f], predict[0], predict[1], weights, biases, eta)
+            predict = forward_prop(data_point, weights, biases)
+            gradients = backward_prop(data_point, labels[f], predict[0], predict[1], weights, biases, eta)
             weights = gradients[0]
             biases = gradients[1]
             error += mse(predict[0], labels[f])
@@ -132,7 +132,7 @@ correct = 0
 n = len(test_labels)
 
 for d in range(len(test_labels)):
-    predict = forward_pass(test_features[d], train[0], train[1])
+    predict = forward_prop(test_features[d], train[0], train[1])
     votes = [p[0] for p in predict[0]]
     predicted_class = votes.index(max(votes))
     if predicted_class == test_labels[d]:
