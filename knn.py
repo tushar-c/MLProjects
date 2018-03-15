@@ -3,15 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import random
 import process_data
-<<<<<<< HEAD
 from sklearn.linear_model import LinearRegression
 
 
-=======
-
-
 # get the k minimum entries
->>>>>>> 1ffb4591fe66ba3106a70c6392a0ab0a817c8b4e
 def get_min(x, k=5):
     minimums = []
     # index '1' contains the norms
@@ -58,14 +53,9 @@ def knn(X, Y, test_features, test_labels, k=5):
     return sq_error / len(estimates)
 
 
-<<<<<<< HEAD
-
 trials = 10
 lr_errors = []
-sklr_errors = []
-=======
 # fetch and clean the data
->>>>>>> 1ffb4591fe66ba3106a70c6392a0ab0a817c8b4e
 pre_data = process_data.get_data()
 data = process_data.process_data(pre_data)
 features = data[0]
