@@ -1,6 +1,9 @@
 """ A dynamic feed-forward network, used for binary classificiation on the iris dataset for this particular example. """
 
 
+""" A dynamic feed-forward network, used for binary classificiation on the iris dataset for this particular example. """
+
+
 import process_data
 import numpy as np
 import matplotlib.pyplot as plt
@@ -102,7 +105,7 @@ test_features = normalize(test_features)
 input_dim = 4
 output_dim = 2
 hidden_layers = 5
-hl_dimensions = [1000, 800, 600, 450, 200]
+hl_dimensions = [250, 200, 150, 100, 50]
 # init weights and biases
 W1 = np.array(np.random.normal(size=hl_dimensions[0] * input_dim), dtype=np.float64).reshape(hl_dimensions[0], input_dim)
 b1 = np.array(np.random.normal(size=hl_dimensions[0])).reshape(hl_dimensions[0], 1)
@@ -126,14 +129,14 @@ eta = 0.00001
 summary = True
 if summary:
     print('training for {} epochs with learning rate {}'.format(epochs, eta))
-    print('-' * 50)
     print('Network architecture: ')
     print('layers = {} (including input and output layers)'.format(hidden_layers + 2))
-    print('input layer : shape = {}, 1'.format(input_dim))
+    print('-' * 50)
+    print('input layer : shape = ({}, 1)'.format(input_dim))
     print('hidden layer {}, weights: {} , biases : {}'.format(1, (hl_dimensions[0], input_dim), hl_dimensions[0]))
     for i in range(1, hidden_layers):
         print('hidden layer {}, weights: {} , biases : {}'.format(i + 1, (hl_dimensions[i], hl_dimensions[i-1]), hl_dimensions[i]))
-    print('output layer: shape = {}, {}'.format(output_dim, hl_dimensions[-1]))
+    print('output layer: weights: {} , biases : {}'.format((output_dim, hl_dimensions[-1]), hl_dimensions[-1]))
 print('-' * 50)
 train = train_net(train_features, train_labels, weights, biases, eta=eta, epochs=epochs)
 # display results
