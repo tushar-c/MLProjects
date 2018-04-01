@@ -1,9 +1,6 @@
 """ A dynamic feed-forward network, used for binary classificiation on the iris dataset for this particular example. """
 
 
-""" A dynamic feed-forward network, used for binary classificiation on the iris dataset for this particular example. """
-
-
 import process_data
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,11 +31,8 @@ def mse(y, y_):
     return np.sum(np.power(y - y_, 2))/len(y)
 
 
-def grad_mse(X, Y, Y_):
-    total = 0
-    for pt in range(len(Y)):
-        total += 2 * X[pt] * (Y_[pt] - Y[pt])
-    return total
+def grad_mse(y, y_):
+    return -np.sum((y - y_))
 
 
 def gradient_descent_update(x, grad, eta):
@@ -54,7 +48,7 @@ def norm(x):
 
 
 def backprop(y, y_, weights, biases, activations, eta):
-    g = mse(y, y_) * sigmoid(y_)
+    g = grad_mse(y, y_) * sigmoid(y_)
     for i in range(len(weights) - 1, -1, -1):
         grad_bias = g
         grad_weights = np.matmul(g, activations[i - 1].T)
@@ -125,7 +119,7 @@ weights.append(output_weights)
 biases.append(output_biases)
 # train
 epochs = 100
-eta = 0.00001
+eta = 0.1
 summary = True
 if summary:
     print('training for {} epochs with learning rate {}'.format(epochs, eta))
