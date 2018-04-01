@@ -4,7 +4,6 @@
 import process_data
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 
 
 def normalize(X):
