@@ -102,7 +102,7 @@ test_features = normalize(test_features)
 input_dim = 4
 output_dim = 2
 hidden_layers = 5
-hl_dimensions = [i*10 for i in range(1, 11)]
+hl_dimensions = [i*10 for i in range(1, hidden_layers + 1)]
 # init weights and biases
 W1 = np.array(np.random.normal(size=hl_dimensions[0] * input_dim), dtype=np.float64).reshape(hl_dimensions[0], input_dim)
 b1 = np.array(np.random.normal(size=hl_dimensions[0])).reshape(hl_dimensions[0], 1)
