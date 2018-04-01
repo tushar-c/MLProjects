@@ -14,10 +14,6 @@ def sigmoid(x):
     return 1/(1 + np.power(np.e, -x))
 
 
-def sigmoid_derivative(x):
-    return (1 - sigmoid(x)) * sigmoid(x)
-
-
 def softmax(x):
     return np.power(np.e, x)/np.sum(np.power(np.e, x))
 
