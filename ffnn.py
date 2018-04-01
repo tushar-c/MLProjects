@@ -38,10 +38,6 @@ def gradient_descent_update(x, grad, eta):
     return x - (eta * sigmoid(x)*(1 - sigmoid(x)))
 
 
-def gradient_descent_update_l2(x, grad, eta):
-    return x - (eta * sigmoid(x))
-
-
 def norm(x):
     return np.power(np.sum(np.power(x, 2)), 1/2)
 
