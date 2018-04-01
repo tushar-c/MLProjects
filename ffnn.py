@@ -1,4 +1,4 @@
-""" A dynamic feed-forward network, used for binary classificiation on the iris dataset for this particular example """
+""" A dynamic feed-forward network, used for binary classificiation on the iris dataset for this particular example. """
 
 
 import process_data
