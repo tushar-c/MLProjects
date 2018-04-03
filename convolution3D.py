@@ -38,8 +38,7 @@ def conv_pass(i, k, bias, s=2, passes=5):
 depth = 3
 x_input, y_input = 100, 100
 x_kernel, y_kernel = 2, 2
-x_bias, y_bias = 1, 1
-data = np.array([np.random.normal() for i in range(1, (x_input * y_input * depth) + 1)]).reshape(x_input, y_input, depth)
+data = np.array([np.random.normal() for i in range(x_input * y_input * depth)]).reshape(x_input, y_input, depth)
 kernel = np.array([np.random.normal() for i in range(x_kernel * y_kernel * depth)]).reshape(x_kernel, y_kernel, depth)
 bias = np.array([np.random.normal() for i in range(depth)]).reshape(depth, 1)
 x = np.full((x_input, y_input, depth), data)
