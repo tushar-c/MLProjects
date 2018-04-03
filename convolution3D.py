@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def conv(img, kernel, bias, s=2):
+def conv(img, kernel, bias, s):
     x, y, z = img.shape[0], img.shape[1], img.shape[2]
     k_x, k_y, k_z = kernel.shape[0], kernel.shape[1], kernel.shape[2]
     if k_x > x or k_y > y or k_z > z or s > x or s > y or s > z:
@@ -23,14 +23,14 @@ def conv(img, kernel, bias, s=2):
     return V
 
 
-def conv_pass(i, k, s=2, passes=5):
+def conv_pass(i, k, bias, s=2, passes=5):
     inp = i
     for i in range(passes):
         inp_shape = inp.shape
         o = int(np.floor((inp_shape[0] - x_kernel)/s) + 1)
         output_shape = (o, o, depth)
         print('pass {}, input shape:{}, output shape:{}'.format(i+1, inp_shape, output_shape))
-        conv_pass = conv(inp, kernel, bias)
+        conv_pass = conv(inp, kernel, bias, s)
         inp = conv_pass
     return inp
 
@@ -43,5 +43,5 @@ data = np.array([np.random.normal() for i in range(1, (x_input * y_input * depth
 kernel = np.array([np.random.normal() for i in range(x_kernel * y_kernel * depth)]).reshape(x_kernel, y_kernel, depth)
 bias = np.array([np.random.normal() for i in range(depth)]).reshape(depth, 1)
 x = np.full((x_input, y_input, depth), data)
-get = conv_pass(x, kernel)
+get = conv_pass(x, kernel, bias)
 print(get)
