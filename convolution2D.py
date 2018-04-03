@@ -36,7 +36,6 @@ def conv_pass(i, k, bias, s=2, passes=5):
 
 x_input, y_input = 100, 100
 x_kernel, y_kernel = 2, 2
-x_bias, y_bias = 1, 1
 data = np.array([np.random.normal() for i in range(1, (x_input * y_input) + 1)]).reshape(x_input, y_input)
 kernel = np.array([np.random.normal() for i in range(x_kernel * y_kernel)]).reshape(x_kernel, y_kernel)
 bias = np.random.normal()
