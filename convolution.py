@@ -1,48 +1,47 @@
 import numpy as np
 
 
-def conv(img, kernel, s=1):
+def conv(img, kernel, bias, s=2):
     x, y, z = img.shape[0], img.shape[1], img.shape[2]
     k_x, k_y, k_z = kernel.shape[0], kernel.shape[1], kernel.shape[2]
-    if k_x > x or k_y > y or k_z > z or s > x or s > y:
-        return None
-    spatial_dim = int(np.floor((x - k_x)/s) + 1)
-    V = np.full((spatial_dim, spatial_dim, k_z), 0)
-    x_spatial, y_spatial = 0, 0
-    for a in range(spatial_dim):
-        for b in range(spatial_dim):
-            img_slice = img[x_spatial:k_x, y_spatial:k_y, 0:k_z]
-            conv_out = np.sum(img_slice * kernel)
-            V[a, b, :] = conv_out
-            k_x, k_y = x_spatial + s, y_spatial + s
-    return V
-
-
-def conv2d(img, kernel, s=1):
-    x, y = img.shape[0], img.shape[1]
-    k_x, k_y = kernel.shape[0], kernel.shape[1]
-    if k_x > x or k_y > y or s > x or s > y:
+    if k_x > x or k_y > y or k_z > z or s > x or s > y or s > z:
         return None
     spat_dim = int(np.floor((x - k_x)/s) + 1)
-    V = np.full((spat_dim, spat_dim), 0)
+    V = np.full((spat_dim, spat_dim, z), 0)
     x_spatial, y_spatial = 0, 0
-    for a in range(spat_dim):
-        for b in range(spat_dim):
-            img_slice = img[x_spatial:k_x, y_spatial:k_y]
+    for x in range(spat_dim):
+        for y in range(spat_dim):
+            img_slice = img[x_spatial:k_x, y_spatial:k_y, 0:k_z]
             conv_out = np.sum(img_slice * kernel)
-            V[a, b] = conv_out
-            k_x, k_y = x_spatial + s, y_spatial + s
+            for k in range(z):
+                V[x, y, k] = conv_out + bias[k]
+            y_spatial += s
+            k_y += s
+        x_spatial = x_spatial + s
+        k_x = k_x + s
+        y_spatial, k_y = 0, kernel.shape[1]
     return V
 
 
-data = np.array([i for i in range(1, 28)]).reshape(3,3,3)
-x = np.full((3,3,3), data)
-kernel = np.array([1,1,1,1,1,1,1,1,1,1,1,1]).reshape(2,2,3)
-bi = np.full((2,2,3), 1)
-data1 = np.array([i for i in range(1, 10)]).reshape(3, 3)
-x1 = np.full((3, 3), data1)
-kernel1 = np.array([1, 1, 1, 1]).reshape(2, 2)
-get = conv(x, kernel)
-get_2d = conv2d(x1, kernel1)
+def conv_pass(i, k, s=2, passes=5):
+    inp = i
+    for i in range(passes):
+        inp_shape = inp.shape
+        o = int(np.floor((inp_shape[0] - x_kernel)/s) + 1)
+        output_shape = (o, o, depth)
+        print('pass {}, input shape:{}, output shape:{}'.format(i+1, inp_shape, output_shape))
+        conv_pass = conv(inp, kernel, bias)
+        inp = conv_pass
+    return inp
+
+
+depth = 3
+x_input, y_input = 100, 100
+x_kernel, y_kernel = 2, 2
+x_bias, y_bias = 1, 1
+data = np.array([np.random.normal() for i in range(1, (x_input * y_input * depth) + 1)]).reshape(x_input, y_input, depth)
+kernel = np.array([np.random.normal() for i in range(x_kernel * y_kernel * depth)]).reshape(x_kernel, y_kernel, depth)
+bias = np.array([np.random.normal() for i in range(depth)]).reshape(depth, 1)
+x = np.full((x_input, y_input, depth), data)
+get = conv_pass(x, kernel)
 print(get)
-print(get_2d)
