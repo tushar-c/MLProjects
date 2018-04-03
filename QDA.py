@@ -41,8 +41,8 @@ def QDA_predictions(X, pi_k, mu_k, sigmas):
 
 def QDA(X, Y):
     N = len(Y)
-    class1 = [Y[i] for i in range(len(Y)) if Y[i] == 0]
-    class2 = [Y[i] for i in range(len(Y)) if Y[i] == 1]
+    class1 = [(X[i], Y[i]) for i in range(len(Y)) if Y[i] == 0]
+    class2 = [(X[i], Y[i]) for i in range(len(Y)) if Y[i] == 1]
     pi1, pi2 = len(class1)/N, len(class2)/N
     mu1, mu2 = 0, 0
     for i in range(len(Y)):
@@ -55,8 +55,8 @@ def QDA(X, Y):
     for i in range(len(X)):
         raw_elems = [j for j in X[i]]
         dummy_X.append(raw_elems)
-    class1_vectors = [(dummy_X[i], Y[i]) for i in range(len(class1))]
-    class2_vectors = [(dummy_X[i], Y[i]) for i in range(len(class2))]
+    class1_vectors = [(i[0], i[1]) for i in class1]
+    class2_vectors = [(j[0], j[1]) for j in class2]
     class1_X = [i[0] for i in class1_vectors]
     class1_Y = [i[1] for i in class1_vectors]
     class2_X = [j[0] for j in class2_vectors]
