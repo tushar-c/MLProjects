@@ -5,6 +5,8 @@ def conv(img, kernel, bias, s):
     x, y, z = img.shape[0], img.shape[1], img.shape[2]
     k_x, k_y, k_z = kernel.shape[0], kernel.shape[1], kernel.shape[2]
     if k_x > x or k_y > y or k_z > z or s > x or s > y or s > z:
+        print("""warning, the kernel or the stride size is greater than the input,
+                convolution therefore in this case is not defined, returning None""")
         return None
     spat_dim = int(np.floor((x - k_x)/s) + 1)
     V = np.full((spat_dim, spat_dim, z), 0)
