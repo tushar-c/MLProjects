@@ -1,7 +1,5 @@
 import numpy as np
 import ffnn
-import random
-import matplotlib.pyplot as plt
 
 
 def conv2d(img, kernel, bias, s, activation=False):
