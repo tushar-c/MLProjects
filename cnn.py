@@ -209,5 +209,6 @@ if __name__ == "__main__":
             # kernel1 update
             k1 = gradient_descent_update(k1, delta_k1, eta)
             bias_1 = np.sum(activated_delta_c1)
-        print('pass = {}, pass_mse = {}, correct predictions = {}, pass_accuracy = {}'.format(p + 1, pass_mse, pass_accuracy, pass_accuracy / len(dummy_answers)))
+        print('pass = {}, pass_mse = {}, correct predictions = {} ,total observations = {}, pass_accuracy = {}'\
+              .format(p + 1, pass_mse, pass_accuracy, len(dummy_answers), pass_accuracy / len(dummy_answers)))
 
