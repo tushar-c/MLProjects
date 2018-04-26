@@ -14,13 +14,13 @@ def conv2d(img, kernel, bias, s, activation=False):
         print('returning None')
         return None
     spat_dim = int(np.floor((x - k_x)/s) + 1)
-    V = np.full((spat_dim, spat_dim), 0)
+    V = np.full((spat_dim, spat_dim), 0, dtype=np.float)
     x_spatial, y_spatial = 0, 0
     for x in range(spat_dim):
         for y in range(spat_dim):
             img_slice = img[x_spatial:k_x, y_spatial:k_y]
-            conv_out = img_slice * kernel
-            V[x, y] = np.sum(conv_out) + bias
+            conv_out = np.sum(img_slice * kernel)
+            V[x, y] = conv_out + bias
             y_spatial += s
             k_y += s
         x_spatial = x_spatial + s
@@ -31,7 +31,7 @@ def conv2d(img, kernel, bias, s, activation=False):
     return V
 
 
-def max_pooling(img, pool_window, s):
+def max_pooling(img, pool_window, s, threshold=1e15):
     x, y = img.shape[0], img.shape[1]
     p_x, p_y = pool_window[0], pool_window[1]
     if p_x > x or p_y > y or s > x or s > y:
@@ -51,6 +51,8 @@ def max_pooling(img, pool_window, s):
         for y in range(spat_dim):
             img_slice = img[x_spatial:p_x, y_spatial:p_y]
             pool_out = np.max(img_slice)
+            if pool_out > threshold:
+                pool_out = threshold
             if spat_dim == 1:
                 pooled = pool_out
             else:
@@ -63,7 +65,7 @@ def max_pooling(img, pool_window, s):
     return pooled
 
 
-def avg_pooling(img, pool_window, s):
+def avg_pooling(img, pool_window, s, threshold=1e15):
     x, y = img.shape[0], img.shape[1]
     p_x, p_y = pool_window[0], pool_window[1]
     if p_x > x or p_y > y or s > x or s > y:
@@ -77,21 +79,20 @@ def avg_pooling(img, pool_window, s):
     if spat_dim == 1:
         pooled = 0
     else:
-        pooled = np.full((spat_dim, spat_dim), 0)
+        pooled = np.full((spat_dim, spat_dim), 0, dtype=np.float)
     x_spatial, y_spatial = 0, 0
     for x in range(spat_dim):
         for y in range(spat_dim):
             img_slice = img[x_spatial:p_x, y_spatial:p_y]
             flattened_pool = np.sum(img_slice.ravel())
+            if flattened_pool > threshold:
+                flattened_pool = threshold
             n = len(img_slice.ravel())
             pool_out = flattened_pool / n
             if spat_dim == 1:
                 pooled = pool_out
             else:
-                try:
-                    pooled[x, y] = pool_out
-                except ValueError:
-                    print(img_slice)
+                pooled[x, y] = pool_out
             y_spatial += s
             p_y += s
         x_spatial = x_spatial + s
@@ -173,7 +174,16 @@ def infer_output_layer_shape(input_shape, conv_layers, kernels, poolings, kernel
     return curr_input_shape
 
 
-def forward_conv_pass(input_, conv_layers, kernels, biases, poolings, kernel_strides=1, pool_stride=2):
+def normalize(X):
+    for i in range(X.shape[1]):
+        X[:, i] = (X[:, i] - np.mean(X[:, i])) / np.std(X[:, i])
+
+
+def l2_norm(x):
+    return np.power(np.sum(np.power(x, 2)), 1/2)
+
+
+def forward_conv_pass(input_, conv_layers, kernels, biases, poolings, kernel_strides=1, pool_stride=2, threshold=1e20):
     curr_input = input_
     convolution_cache = []
     activation_cache = []
@@ -189,22 +199,34 @@ def forward_conv_pass(input_, conv_layers, kernels, biases, poolings, kernel_str
     return [convolution_cache, activation_cache, pooling_cache]
 
 
+def stability_check(array, threshold=150):
+    flat = array.ravel()
+    for f in range(len(flat)):
+        if flat[f] > threshold:
+            flat[f] = threshold
+    return flat.reshape(array.shape[0], array.shape[1])
+
+
 if __name__ == "__main__":
     # init hyperparams
+    global_threshold = 1.5e30
     conv_layers = 2
     output_classes = 2
-    eta = 0.5
-    passes = 5
-    x_input, y_input = 28, 28
-    x_kernel, y_kernel = 5, 5
-    pool_stride = 1
+    eta = 8
+    passes = 100
+    x_input, y_input = 12, 12
+    x_kernel, y_kernel = 2, 2
+    pool_stride = 2
     pool_window = [2, 2]
     conv_stride = 1
     kernel_stride = 1
-    dataset_size = 10
+    dataset_size = 100
     print('init data and labels')
-    dummy_data = [np.array([np.random.normal() for i in range(x_input * y_input)]).reshape(x_input, y_input) for j in range(dataset_size)]
+    dummy_data = [np.array([random.randint(1,256) for i in range(x_input * y_input)]).reshape(x_input, y_input) for j in
+                  range(dataset_size)]
     dummy_answers = []
+    for i in range(len(dummy_data)):
+        normalize(dummy_data[i])
     for k in range(len(dummy_data)):
         chosen_index = random.choice((0, 1))
         if chosen_index == 1:
@@ -212,16 +234,15 @@ if __name__ == "__main__":
         else:
             d_lbl = np.array([1, 0]).reshape(2, 1)
         dummy_answers.append(d_lbl)
-
     print('data init complete, init kernels and biases')
-    kernels = [np.array([np.random.normal() for i in range(x_kernel * y_kernel)], dtype=np.float64).reshape(x_kernel, y_kernel)\
+    kernels = [np.array([np.random.uniform() for i in range(x_kernel * y_kernel)], dtype=np.float).reshape(x_kernel, y_kernel)\
                for k in range(conv_layers)]
     poolings = [pool_window for i in range(conv_layers)]
-    biases = [np.random.normal() for i in range(conv_layers)]
+    biases = [np.random.uniform() for i in range(conv_layers)]
     print('init kernels and biases complete')
     final_output_shape = infer_output_layer_shape(x_input, conv_layers, kernels, poolings)
-    output_layer_weights = np.array([np.random.normal() for i in range(output_classes * (final_output_shape**2))]).reshape(output_classes, final_output_shape**2)
-    output_layer_biases = np.array([0 for i in range(output_classes)]).reshape(output_classes, 1)
+    output_layer_weights = np.array([np.random.uniform() for i in range(output_classes * (final_output_shape**2))]).reshape(output_classes, final_output_shape**2)
+    output_layer_biases = np.array([np.random.uniform() for i in range(output_classes)]).reshape(output_classes, 1)
     print('init learning....')
     for p in range(passes):
         pass_mse = 0
@@ -247,7 +268,6 @@ if __name__ == "__main__":
             delta_final_conv = upscale(delta_final_pool, convolution_cache[-1])
             delta_final_conv_sigma = delta_final_conv * convolution_cache[-1] * (1 - convolution_cache[-1])
             delta_final_kernel = conv2d(np.rot90(pooling_cache[-2], 2), delta_final_conv_sigma, 0.3, kernel_stride)
-            #print(pooling_cache[-2], delta_final_conv_sigma, delta_final_kernel)
             delta_final_bias = np.sum(delta_final_conv_sigma)
             # automatic now
             backward_kernel_cache = []
@@ -261,6 +281,10 @@ if __name__ == "__main__":
                 delta_conv_sigma = curr_delta_conv_sigma
                 delta_curr_pool = conv2d(delta_conv_sigma, np.rot90(kernels[j + 1], 2), biases[j + 1], kernel_stride)
                 delta_curr_conv = upscale(delta_curr_pool, convolution_cache[j])
+                # stability checks
+                delta_curr_conv = stability_check(delta_curr_conv, global_threshold)
+                convolution_cache[j] = stability_check(convolution_cache[j], global_threshold)
+
                 curr_delta_conv_sigma = delta_curr_conv * convolution_cache[j] * (1 - convolution_cache[j])
                 delta_curr_kernel = conv2d(np.rot90(pooling_cache[j - 1], 2), curr_delta_conv_sigma, 0, kernel_stride)
                 delta_curr_bias = np.sum(curr_delta_conv_sigma)
@@ -271,4 +295,5 @@ if __name__ == "__main__":
                 delta_conv_sigma_cache.append(delta_conv_sigma)
             output_layer_weights = gradient_descent_update(output_layer_weights, delta_output_layer_weights, eta)
             output_layer_biases = error
-        print('pass = {}, pass_mse = {}, correct predictions = {}, pass_accuracy = {}'.format(p + 1, pass_mse, pass_accuracy, pass_accuracy / len(dummy_answers)))
+        print('pass = {}, pass_mse = {}, correct predictions = {}, pass_accuracy = {}%'.\
+              format(p + 1, pass_mse, pass_accuracy, (pass_accuracy * 100) / len(dummy_answers)))
