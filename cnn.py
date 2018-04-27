@@ -31,7 +31,7 @@ def conv2d(img, kernel, bias, s, activation=False):
     return V
 
 
-def max_pooling(img, pool_window, s, threshold=1e15):
+def max_pooling(img, pool_window, s, threshold=1.5e30):
     x, y = img.shape[0], img.shape[1]
     p_x, p_y = pool_window[0], pool_window[1]
     if p_x > x or p_y > y or s > x or s > y:
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     pool_window = [2, 2]
     conv_stride = 1
     kernel_stride = 1
-    dataset_size = 100
+    dataset_size = 10
     print('init data and labels')
     dummy_data = [np.array([random.randint(1,256) for i in range(x_input * y_input)]).reshape(x_input, y_input) for j in
                   range(dataset_size)]
