@@ -101,8 +101,25 @@ def avg_pooling(img, pool_window, s, threshold=1e15):
     return pooled
 
 
+def grad_relu(x):
+    orig_shape = (x.shape[0], x.shape[1])
+    x = x.ravel()
+    for i in range(len(x)):
+        if x[i] == 0 or x[i] < 0:
+            x[i] = 0
+        else:
+            x[1] = 1
+    x = x.reshape(orig_shape[0], orig_shape[1])
+    return x
+
+
 def relu(x):
-    return max(0, x)
+    orig_shape = (x.shape[0], x.shape[1])
+    x = x.ravel()
+    for i in range(len(x)):
+        x[i] = max(0, x[i])
+    x = x.reshape(orig_shape[0], orig_shape[1])
+    return x
 
 
 def activation(x):
@@ -190,7 +207,8 @@ def forward_conv_pass(input_, conv_layers, kernels, biases, poolings, kernel_str
     pooling_cache = []
     for c in range(conv_layers):
         convolution = conv2d(curr_input, kernels[c], biases[c], kernel_strides)
-        activated_convolution = sigmoid(convolution)
+        #activated_convolution = sigmoid(convolution)
+        activated_convolution = relu(convolution)
         pooling = avg_pooling(activated_convolution, poolings[c], pool_stride)
         convolution_cache.append(convolution)
         activation_cache.append(activated_convolution)
@@ -212,7 +230,7 @@ if __name__ == "__main__":
     global_threshold = 1.5e30
     conv_layers = 2
     output_classes = 2
-    eta = 8
+    eta = 4.2
     passes = 100
     x_input, y_input = 12, 12
     x_kernel, y_kernel = 2, 2
@@ -220,7 +238,7 @@ if __name__ == "__main__":
     pool_window = [2, 2]
     conv_stride = 1
     kernel_stride = 1
-    dataset_size = 10
+    dataset_size = 500
     print('init data and labels')
     dummy_data = [np.array([random.randint(1,256) for i in range(x_input * y_input)]).reshape(x_input, y_input) for j in
                   range(dataset_size)]
@@ -261,12 +279,14 @@ if __name__ == "__main__":
             pass_mse += mse(prediction, dummy_answers[d])
             # backward pass
             # here, the last conv backprop is manual
-            error = (final_output - dummy_answers[d]) * final_output * (1 - final_output)
+            #error = (final_output - dummy_answers[d]) * final_output * (1 - final_output)
+            error = (final_output - dummy_answers[d]) * grad_relu(final_output)
             delta_output_layer_weights = np.matmul(error, fc_layer.T)
             delta_fully_connected = np.matmul(output_layer_weights.T, error)
             delta_final_pool = fc_layer.reshape(final_output_shape, final_output_shape)
             delta_final_conv = upscale(delta_final_pool, convolution_cache[-1])
-            delta_final_conv_sigma = delta_final_conv * convolution_cache[-1] * (1 - convolution_cache[-1])
+            #delta_final_conv_sigma = delta_final_conv * convolution_cache[-1] * (1 - convolution_cache[-1])
+            delta_final_conv_sigma = delta_final_conv * grad_relu(convolution_cache[-1])
             delta_final_kernel = conv2d(np.rot90(pooling_cache[-2], 2), delta_final_conv_sigma, 0.3, kernel_stride)
             delta_final_bias = np.sum(delta_final_conv_sigma)
             # automatic now
@@ -284,8 +304,8 @@ if __name__ == "__main__":
                 # stability checks
                 delta_curr_conv = stability_check(delta_curr_conv, global_threshold)
                 convolution_cache[j] = stability_check(convolution_cache[j], global_threshold)
-
-                curr_delta_conv_sigma = delta_curr_conv * convolution_cache[j] * (1 - convolution_cache[j])
+                #curr_delta_conv_sigma = delta_curr_conv * convolution_cache[j] * (1 - convolution_cache[j])
+                curr_delta_conv_sigma = delta_curr_conv * grad_relu(convolution_cache[j])
                 delta_curr_kernel = conv2d(np.rot90(pooling_cache[j - 1], 2), curr_delta_conv_sigma, 0, kernel_stride)
                 delta_curr_bias = np.sum(curr_delta_conv_sigma)
                 kernels[j] = gradient_descent_update(kernels[j], delta_curr_kernel, eta)
