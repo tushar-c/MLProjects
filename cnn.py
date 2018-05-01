@@ -69,7 +69,7 @@ def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers,
 
 
 def train(features, labels, conv_layers, kernels, biases, poolings, eta, \
-          input_shape=28, output_classes=10, epochs=10):
+          input_shape=28, output_classes=10, epochs=1000):
 
     final_output_shape = conv_utils.infer_output_layer_shape(input_shape, conv_layers, kernels, poolings,
                                                             kernel_strides=1, pool_stride=2)
@@ -94,12 +94,11 @@ def train(features, labels, conv_layers, kernels, biases, poolings, eta, \
 
             kernels, biases, output_layer_weights, output_layer_biases = conv_utils.update_params(kernels, biases,
                                                                                                   backward_pass, eta)
-        print('epoch {} / {}, epoch mse = {}, epoch accuracy = {}'.format(e + 1, epochs, mse, \
-                                                                          (correct * 100) / len(features)))
+        print('epoch {} / {}, epoch accuracy = {}'.format(e + 1, epochs,(correct * 100) / len(features)))
     return kernels, biases, output_layer_weights, output_layer_biases
 
 
-mnist_train_data = conv_utils.get_mnist_data_train(sliced=100)
+mnist_train_data = conv_utils.get_mnist_data(sliced=100)
 train_features = mnist_train_data[0]
 train_labels = mnist_train_data[1]
 conv_layers = 1
