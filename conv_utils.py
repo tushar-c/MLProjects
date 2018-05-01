@@ -50,7 +50,7 @@ def grad_mse(y, y_):
 
 
 def gradient_descent_update(x, grad, eta):
-    return x + eta * grad
+    return (x + eta * grad)
 
 
 def conv2d(img, kernel, bias, s):
@@ -233,19 +233,45 @@ def output_layer_weights_biases(output_classes, final_output_shape):
     return [weights, biases]
 
 
-def get_mnist_data_train(sliced=60000, output_classes=10):
+def get_mnist_data(sliced=60000, test_offset=1000, output_classes=10):
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     x_train = x_train / 255
+    x_test = x_test / 255
     train_features = x_train[:sliced]
     pre_train_labels = y_train[:sliced]
     train_labels = []
+    test_features = x_test[sliced:sliced + test_offset]
+    pre_test_labels = y_test[sliced:sliced + test_offset]
+    test_labels = []
     for p in range(len(pre_train_labels)):
         answer = pre_train_labels[p]
         one_hot = np.zeros(output_classes).reshape(output_classes, 1)
         one_hot[answer - 1] = 1
         train_labels.append(one_hot)
     train_labels = np.array(train_labels)
-    return [train_features, train_labels]
+    for p in range(len(pre_test_labels)):
+        answer = pre_test_labels[p]
+        one_hot = np.zeros(output_classes).reshape(output_classes, 1)
+        one_hot[answer - 1] = 1
+        test_labels.append(one_hot)
+    test_labels = np.array(test_labels)
+    return [train_features, train_labels, test_features, test_labels]
+
+
+def get_mnist_data_test(sliced=60000, output_classes=10):
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    x_test = x_test / 255
+    test_features = x_test[:sliced]
+    pre_test_labels = y_test[:sliced]
+    test_labels = []
+    for p in range(len(pre_test_labels)):
+        answer = pre_test_labels[p]
+        one_hot = np.zeros(output_classes).reshape(output_classes, 1)
+        one_hot[answer - 1] = 1
+        test_labels.append(one_hot)
+    test_labels = np.array(test_labels)
+    return [test_labels, test_labels]
+
 
 
 def init_kernels(quantity, shape=2):
