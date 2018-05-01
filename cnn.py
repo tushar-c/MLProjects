@@ -94,8 +94,8 @@ def train(features, labels, conv_layers, kernels, biases, poolings, eta, \
 
             kernels, biases, output_layer_weights, output_layer_biases = conv_utils.update_params(kernels, biases,
                                                                                                   backward_pass, eta)
-        print('epoch {} / {}, epoch mse = {}, epoch accuracy = {}'.format(e + 1, epochs, d + 1, \
-                                                                          (correct * 100) / len(features), mse))
+        print('epoch {} / {}, epoch mse = {}, epoch accuracy = {}'.format(e + 1, epochs, mse, \
+                                                                          (correct * 100) / len(features)))
     return kernels, biases, output_layer_weights, output_layer_biases
 
 
