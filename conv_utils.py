@@ -41,16 +41,27 @@ def infer_output_layer_shape(input_shape, conv_layers, kernels, poolings, kernel
     return curr_input_shape
 
 
+def categorical_cross_entropy(y, t):
+    error = 0
+    delta = 1e-7
+    for i in range(len(y)):
+        if t[i] == 0:
+            error += y[i] * np.log(t[i] + delta)
+        else:
+            error += y[i] * np.log(t[i] - delta)
+    return error
+
+
 def mse(y, y_):
     return np.sum(np.power(y - y_, 2)) / 2
 
 
-def grad_mse(y, y_):
-    return np.sum((y - y_))
-
-
 def gradient_descent_update(x, grad, eta):
-    return (x + eta * grad)
+    return x - (eta * grad)
+
+
+def grad_softmax(x):
+    return stable_softmax(x) * (1 - stable_softmax(x))
 
 
 def conv2d(img, kernel, bias, s):
@@ -71,6 +82,30 @@ def conv2d(img, kernel, bias, s):
             img_slice = img[x_spatial:k_x, y_spatial:k_y]
             conv_out = np.sum(img_slice * kernel)
             V[x, y] = conv_out + bias
+            y_spatial += s
+            k_y += s
+        x_spatial = x_spatial + s
+        k_x = k_x + s
+        y_spatial, k_y = 0, kernel.shape[1]
+    return V
+
+
+def conv(img, kernel, bias, s):
+    x, y, z = img.shape[0], img.shape[1], img.shape[2]
+    k_x, k_y, k_z = kernel.shape[0], kernel.shape[1], kernel.shape[2]
+    if k_x > x or k_y > y or k_z > z or s > x or s > y or s > z:
+        print("""warning, the kernel or the stride size is greater than the input,
+                convolution therefore in this case is not defined, returning None""")
+        return None
+    spat_dim = int(np.floor((x - k_x)/s) + 1)
+    V = np.full((spat_dim, spat_dim, z), 0)
+    x_spatial, y_spatial = 0, 0
+    for x in range(spat_dim):
+        for y in range(spat_dim):
+            img_slice = img[x_spatial:k_x, y_spatial:k_y, 0:k_z]
+            conv_out = np.sum(img_slice * kernel)
+            for k in range(z):
+                V[x, y, k] = conv_out + bias[k]
             y_spatial += s
             k_y += s
         x_spatial = x_spatial + s
@@ -198,30 +233,6 @@ def sigmoid_gradient(x):
     return stable_sigmoid(x) * (1 - stable_sigmoid(x))
 
 
-def sigmoid(x, u_threshold=1.5e80, l_threshold=1.5e-80):
-    squashed = 1/(1 + np.power(np.e, -x))
-    for i in range(len(squashed)):
-        if squashed[i] > u_threshold:
-            squashed[i] = u_threshold
-        if squashed[i] < l_threshold:
-            squashed[i] = l_threshold
-    return squashed
-
-
-def softmax(x, threshold=1.5e80):
-    try:
-        numerator = np.power(np.e, x)
-        denominator = np.sum(np.power(np.e, x))
-    except RuntimeWarning:
-        print(x, numerator, denominator)
-    for i in range(len(numerator)):
-        if numerator[i] > threshold:
-            numerator[i] = threshold
-    if denominator > threshold:
-        denominator = threshold
-    return numerator/denominator
-
-
 def stable_softmax(x):
     y = (x - np.max(x))
     return np.power(np.e, y) / np.sum(np.power(np.e, y))
@@ -289,7 +300,7 @@ def init_biases(quantity):
     return biases
 
 
-def init_poolings(quantity, shape=[2,2]):
+def init_poolings(quantity, shape=(2,2)):
     return [shape for i in range(quantity)]
 
 
@@ -322,15 +333,15 @@ def update_params(kernels, biases, backward_pass, eta):
     output_layer_weights_gradients = backward_pass[2]
     output_layer_biases_gradients = backward_pass[3]
 
-    output_layer_weights = gradient_descent_update(output_layer_weights_gradients[0][0], \
+    output_layer_weights = gradient_descent_update(output_layer_weights_gradients[0][0],
                                                               output_layer_weights_gradients[0][1], eta)
-    output_layer_biases = gradient_descent_update(output_layer_biases_gradients[0][0], \
+    output_layer_biases = gradient_descent_update(output_layer_biases_gradients[0][0],
                                                              output_layer_biases_gradients[0][1], eta)
 
     for k in range(len(kernel_gradients)):
         kernels[k] = gradient_descent_update(kernel_gradients[k][0], kernel_gradients[k][1], eta)
     for b in range(len(biases_gradients)):
-        biases[k] = gradient_descent_update(biases_gradients[k][0], biases_gradients[k][1], eta)
+        biases[b] = gradient_descent_update(biases_gradients[b][0], biases_gradients[b][1], eta)
 
     return kernels, biases, output_layer_weights, output_layer_biases
 
