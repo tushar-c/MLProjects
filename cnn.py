@@ -3,7 +3,6 @@ import numpy as np
 import pdb
 
 
-
 def forward_conv_pass(input_, conv_layers, kernels, biases, poolings, kernel_strides=1, pool_stride=2):
     curr_input = input_
     convolution_cache = []
@@ -20,13 +19,14 @@ def forward_conv_pass(input_, conv_layers, kernels, biases, poolings, kernel_str
     return [convolution_cache, activation_cache, pooling_cache]
 
 
-def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers, kernels, weights, biases, \
-                                          fc_layer,pooling_cache, convolution_cache, final_output_shape, kernel_stride=1):
+def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers, kernels, weights, biases,
+                       fc_layer,pooling_cache, convolution_cache, final_output_shape, observed_probs,
+                       kernel_stride=1, delta=1e-20):
 
     kernel_gradients, biases_gradients, output_layer_weights_gradients, output_layer_biases_gradients = [], [], [], []
     output_layer_weights = weights
     output_layer_biases = biases
-    error = ((label - input_) / len(input_)) * conv_utils.stable_sigmoid(preactivated_output)
+    error = (input_ - label) / len(input_) * conv_utils.grad_softmax(input_)
     delta_output_layer_weights = np.matmul(error, fc_layer.T)
     delta_output_layer_biases = error
     output_layer_weights_gradients.append((output_layer_weights, delta_output_layer_weights))
@@ -36,7 +36,7 @@ def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers,
     delta_final_conv = conv_utils.upscale(delta_final_pool, convolution_cache[-1])
     delta_final_conv_sigma = delta_final_conv * conv_utils.sigmoid_gradient(convolution_cache[-1])
     if conv_layers > 1:
-        delta_final_kernel = conv_utils.conv2d(np.rot90(pooling_cache[-2], 2), delta_final_conv_sigma, \
+        delta_final_kernel = conv_utils.conv2d(np.rot90(pooling_cache[-2], 2), delta_final_conv_sigma,
                                                biases[-1], kernel_stride)
         delta_final_conv_sigma = conv_utils.stability_check(delta_final_conv_sigma)
         delta_final_kernel = conv_utils.stability_check(delta_final_kernel)
@@ -57,7 +57,7 @@ def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers,
             kernel_gradients.append((kernels[j], delta_curr_kernel))
             biases_gradients.append((biases[j], delta_curr_bias))
     else:
-        delta_final_kernel = conv_utils.conv2d(np.rot90(feature, 2), delta_final_conv_sigma, \
+        delta_final_kernel = conv_utils.conv2d(np.rot90(feature, 2), delta_final_conv_sigma,
                                                biases[-1], kernel_stride)
         delta_final_conv_sigma = conv_utils.stability_check(delta_final_conv_sigma)
         delta_final_kernel = conv_utils.stability_check(delta_final_kernel)
@@ -68,9 +68,10 @@ def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers,
     return kernel_gradients, biases_gradients, output_layer_weights_gradients, output_layer_biases_gradients
 
 
-def train(features, labels, conv_layers, kernels, biases, poolings, eta, \
+def train(features, labels, conv_layers, kernels, biases, poolings, eta, observed_probs,
           input_shape=28, output_classes=10, epochs=1000):
 
+    print('training cnn with {} layer(s) for {} epochs with learning rate {}'.format(conv_layers, epochs, eta))
     final_output_shape = conv_utils.infer_output_layer_shape(input_shape, conv_layers, kernels, poolings,
                                                             kernel_strides=1, pool_stride=2)
     output_layer_weights = conv_utils.output_layer_weights_biases(output_classes, final_output_shape)[0]
@@ -90,24 +91,34 @@ def train(features, labels, conv_layers, kernels, biases, poolings, eta, \
             mse += conv_utils.mse(conv_utils.softmax_prediction(final_output), labels[d])
             if conv_utils.check_prediction(final_output, labels[d]) == 0:
                 correct += 1
-            backward_pass = backward_conv_pass(final_output, preactivated_output, features[d], labels[d], \
-                                               conv_layers, kernels, output_layer_weights, output_layer_biases, \
-                                                fc_layer, pooling_cache, convolution_cache, final_output_shape)
+            backward_pass = backward_conv_pass(final_output, preactivated_output, features[d], labels[d],
+                                               conv_layers, kernels, output_layer_weights, output_layer_biases,
+                                                fc_layer, pooling_cache, convolution_cache, final_output_shape,
+                                               observed_probs)
 
             kernels, biases, output_layer_weights, output_layer_biases = conv_utils.update_params(kernels, biases,
                                                                                                   backward_pass, eta)
-        print('epoch {} / {}, epoch accuracy = {}'.format(e + 1, epochs,(correct * 100) / len(features)))
+        print('epoch {} / {}, epoch accuracy = {} %, correct predictions = {} out of {}'\
+              .format(e + 1, epochs,(correct * 100) / len(features), correct, len(features)))
     return kernels, biases, output_layer_weights, output_layer_biases
 
 
 mnist_train_data = conv_utils.get_mnist_data(sliced=100)
 train_features = mnist_train_data[0]
 train_labels = mnist_train_data[1]
-conv_layers = 1
+conv_layers = 2
 output_classes = 10
-eta = 0.405
+eta = 0.503
+epochs = 500
+observed_proba = {i: 0 for i in range(output_classes)}
+for i in range(len(train_labels)):
+    observed_proba[np.argmax(train_labels[i])] += 1
+for i in observed_proba:
+    observed_proba[i] /= len(train_labels)
+
+observed_probs = np.array([observed_proba[i] for i in observed_proba]).reshape(output_classes, 1)
 kernels = conv_utils.init_kernels(conv_layers, shape=2)
 biases = conv_utils.init_biases(conv_layers)
 poolings = conv_utils.init_poolings(conv_layers)
-train_cnn = train(train_features, train_labels, conv_layers, kernels, biases, poolings, eta,\
-                  output_classes=output_classes)
+train_cnn = train(train_features, train_labels, conv_layers, kernels, biases, poolings, eta, observed_probs,
+                  output_classes=output_classes, epochs=epochs)
