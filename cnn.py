@@ -26,7 +26,7 @@ def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers,
     kernel_gradients, biases_gradients, output_layer_weights_gradients, output_layer_biases_gradients = [], [], [], []
     output_layer_weights = weights
     output_layer_biases = biases
-    error = (input_ - label) / len(input_) * conv_utils.grad_softmax(input_)
+    error = (input_ - label) / len(input_) * conv_utils.grad_softmax(preactivated_output)
     delta_output_layer_weights = np.matmul(error, fc_layer.T)
     delta_output_layer_biases = error
     output_layer_weights_gradients.append((output_layer_weights, delta_output_layer_weights))
@@ -106,17 +106,11 @@ def train(features, labels, conv_layers, kernels, biases, poolings, eta, observe
 mnist_train_data = conv_utils.get_mnist_data(sliced=100)
 train_features = mnist_train_data[0]
 train_labels = mnist_train_data[1]
-conv_layers = 2
 output_classes = 10
+conv_layers = 1
 eta = 0.503
-epochs = 500
-observed_proba = {i: 0 for i in range(output_classes)}
-for i in range(len(train_labels)):
-    observed_proba[np.argmax(train_labels[i])] += 1
-for i in observed_proba:
-    observed_proba[i] /= len(train_labels)
-
-observed_probs = np.array([observed_proba[i] for i in observed_proba]).reshape(output_classes, 1)
+epochs = 50
+observed_probs = conv_utils.get_empirical_probs(output_classes, train_labels)
 kernels = conv_utils.init_kernels(conv_layers, shape=2)
 biases = conv_utils.init_biases(conv_layers)
 poolings = conv_utils.init_poolings(conv_layers)
