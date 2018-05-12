@@ -346,3 +346,13 @@ def update_params(kernels, biases, backward_pass, eta):
     return kernels, biases, output_layer_weights, output_layer_biases
 
 
+def get_empirical_probs(output_classes, train_labels):
+    observed_proba = {i: 0 for i in range(output_classes)}
+    for i in range(len(train_labels)):
+        observed_proba[np.argmax(train_labels[i])] += 1
+    for i in observed_proba:
+        observed_proba[i] /= len(train_labels)
+
+    observed_probs = np.array([observed_proba[i] for i in observed_proba]).reshape(output_classes, 1)
+    return observed_probs
+
