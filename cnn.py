@@ -1,6 +1,5 @@
 import conv_utils
 import numpy as np
-import pdb
 
 
 def forward_conv_pass(input_, conv_layers, kernels, biases, poolings, kernel_strides=1, pool_stride=2):
@@ -26,8 +25,7 @@ def backward_conv_pass(input_, preactivated_output, feature, label, conv_layers,
     kernel_gradients, biases_gradients, output_layer_weights_gradients, output_layer_biases_gradients = [], [], [], []
     output_layer_weights = weights
     output_layer_biases = biases
-    #error = (input_ - label) * conv_utils.grad_softmax(preactivated_output)
-    error = (input_ - label) * conv_utils.sigmoid_gradient(preactivated_output)
+    error = (input_ - label) * conv_utils.grad_softmax(preactivated_output)
     delta_output_layer_weights = np.matmul(error, fc_layer.T)
     delta_output_layer_biases = error
     output_layer_weights_gradients.append((output_layer_weights, delta_output_layer_weights))
