@@ -3,18 +3,18 @@ import conv_utils
 import matplotlib.pyplot as plt
 
 # get data
-mnist_train_data = conv_utils.get_mnist_data(sliced=1000)
+mnist_train_data = conv_utils.get_mnist_data(sliced=10000)
 train_features = mnist_train_data[0]
 train_labels = mnist_train_data[1]
 # hyperparameters
 output_classes = 10
 time_steps = 28
-eta = 0.001
+hidden_neurons = 100
+eta = 0.095
 features = 28
 # init loss tracker
 all_labels = [np.argmax(j) for j in train_labels]
 loss_tracker = {num: [] for num in all_labels}
-hidden_neurons = 100
 
 U = np.random.randn(hidden_neurons, 28)
 W = np.random.randn(hidden_neurons, hidden_neurons)
@@ -22,7 +22,7 @@ V = np.random.randn(output_classes, hidden_neurons)
 b = np.zeros((hidden_neurons, 1))
 c = np.zeros((output_classes, 1))
 h = np.zeros((hidden_neurons, 1))
-
+prev_h = h
 mem_U, mem_W, mem_V = np.zeros_like(U), np.zeros_like(W), np.zeros_like(V)
 mem_b, mem_c = np.zeros_like(b), np.zeros_like(c)
 
@@ -31,6 +31,7 @@ delta = 1e-8
 for d in range(len(train_features)):
     loss = 0
     U_cache, W_cache, V_cache, h_cache, grad_loss_o_cache = [], [], [], [], []
+    #h_cache[-1] = prev_h
     sequential_image = [train_features[d][:, j].reshape(28, 1) for j in range(28)]
     print('sample {} / {} ; true label = {} ;'.format(d + 1, len(train_features), np.argmax(train_labels[d])), end=' ')
     # forward pass
@@ -41,7 +42,9 @@ for d in range(len(train_features)):
         y_t = conv_utils.stable_softmax(o_t)
         h_cache.append(h)
         loss += -np.log(y_t[np.argmax(train_labels[d])] + delta)
-        error = y_t - np.ones(output_classes).reshape(output_classes, 1)
+        one_hot_vector = np.zeros((output_classes, 1))
+        one_hot_vector[np.argmax(train_labels[d])] = 1
+        error = y_t - one_hot_vector
         grad_loss_o_cache.append(error)
 
     # backward pass
@@ -69,7 +72,6 @@ for d in range(len(train_features)):
         for params in [grad_loss_U, grad_loss_W, grad_loss_b, grad_loss_V, grad_loss_c]:
             np.clip(params, -5, 5, out=params)
 
-    print(conv_utils.l2_norm(grad_loss_V), conv_utils.l2_norm(grad_loss_U), conv_utils.l2_norm(grad_loss_W))
     for param, grad_param, mem in zip([U, W, V, b, c],
                                           [grad_loss_U, grad_loss_W, grad_loss_V, grad_loss_b, grad_loss_c],
                                           [mem_U, mem_W, mem_V, mem_b, mem_c]):
@@ -82,5 +84,5 @@ for d in range(len(train_features)):
 
 for entry in loss_tracker:
     plt.plot(loss_tracker[entry])
-    plt.xlabel('error for label {}'.format(entry))
+    plt.xlabel('error for label: {}'.format(entry))
     plt.show()
