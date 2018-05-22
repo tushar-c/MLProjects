@@ -89,3 +89,4 @@ for entry in loss_tracker:
     plt.plot(loss_tracker[entry])
     plt.xlabel('error for label: {}'.format(entry))
     plt.show()
+    
