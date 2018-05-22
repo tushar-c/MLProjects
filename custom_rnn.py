@@ -22,7 +22,8 @@ V = np.random.randn(output_classes, hidden_neurons)
 b = np.zeros((hidden_neurons, 1))
 c = np.zeros((output_classes, 1))
 h = np.zeros((hidden_neurons, 1))
-prev_h = h
+
+# initialize parameters for adagrad update 
 mem_U, mem_W, mem_V = np.zeros_like(U), np.zeros_like(W), np.zeros_like(V)
 mem_b, mem_c = np.zeros_like(b), np.zeros_like(c)
 
@@ -30,8 +31,8 @@ delta = 1e-8
 
 for d in range(len(train_features)):
     loss = 0
-    U_cache, W_cache, V_cache, h_cache, grad_loss_o_cache = [], [], [], [], []
-    #h_cache[-1] = prev_h
+    # caches to use during backward pass
+    h_cache, grad_loss_o_cache = [], []
     sequential_image = [train_features[d][:, j].reshape(28, 1) for j in range(28)]
     print('sample {} / {} ; true label = {} ;'.format(d + 1, len(train_features), np.argmax(train_labels[d])), end=' ')
     # forward pass
@@ -69,9 +70,11 @@ for d in range(len(train_features)):
         grad_loss_W += np.matmul(diagonal_matrix, np.matmul(prev_layer_grad_loss_h, h_cache[t - 1].T))
         grad_loss_U += np.matmul(diagonal_matrix, np.matmul(prev_layer_grad_loss_h, sequential_image[t].T))
 
+        # gradient clipping to deal with exploding gradients
         for params in [grad_loss_U, grad_loss_W, grad_loss_b, grad_loss_V, grad_loss_c]:
             np.clip(params, -5, 5, out=params)
 
+    # perform adagrad update
     for param, grad_param, mem in zip([U, W, V, b, c],
                                           [grad_loss_U, grad_loss_W, grad_loss_V, grad_loss_b, grad_loss_c],
                                           [mem_U, mem_W, mem_V, mem_b, mem_c]):
