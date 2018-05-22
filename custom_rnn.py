@@ -43,7 +43,10 @@ for d in range(len(train_features)):
         loss += -np.log(y_t[np.argmax(train_labels[d])] + delta)
         error = y_t - np.ones(output_classes).reshape(output_classes, 1)
         grad_loss_o_cache.append(error)
+
     # backward pass
+    grad_loss_U, grad_loss_W, grad_loss_V = np.zeros_like(U), np.zeros_like(W), np.zeros_like(V)
+    grad_loss_b, grad_loss_c = np.zeros_like(b), np.zeros_like(c)
     grad_h_final_time_step = np.matmul(V.T, grad_loss_o_cache[-1])
     prev_layer_grad_loss_h = grad_h_final_time_step
     for t in range(time_steps - 2, -1, -1):
@@ -57,29 +60,27 @@ for d in range(len(train_features)):
         grad_loss_h_t = term2 + term3
         prev_layer_grad_loss_h = grad_loss_h_t
 
-        grad_loss_c = 0
-        grad_loss_b = 0
-        grad_loss_V = 0
-        grad_loss_W = 0
-        grad_loss_U = 0
-
         grad_loss_c += grad_loss_o_cache[t]
         grad_loss_b += np.matmul(diagonal_matrix, prev_layer_grad_loss_h)
         grad_loss_V += np.matmul(grad_loss_o_cache[t], h_cache[t].T)
         grad_loss_W += np.matmul(diagonal_matrix, np.matmul(prev_layer_grad_loss_h, h_cache[t - 1].T))
         grad_loss_U += np.matmul(diagonal_matrix, np.matmul(prev_layer_grad_loss_h, sequential_image[t].T))
-        for param, grad_param, mem in zip([U, W, V, b, c],
+
+        for params in [grad_loss_U, grad_loss_W, grad_loss_b, grad_loss_V, grad_loss_c]:
+            np.clip(params, -5, 5, out=params)
+
+    print(conv_utils.l2_norm(grad_loss_V), conv_utils.l2_norm(grad_loss_U), conv_utils.l2_norm(grad_loss_W))
+    for param, grad_param, mem in zip([U, W, V, b, c],
                                           [grad_loss_U, grad_loss_W, grad_loss_V, grad_loss_b, grad_loss_c],
                                           [mem_U, mem_W, mem_V, mem_b, mem_c]):
-            mem += grad_param ** 2
-            param += -eta * grad_param / np.sqrt(mem + delta)
+        mem += grad_param ** 2
+        param += -eta * grad_param / np.sqrt(mem + delta)
 
     loss_tracker[np.argmax(train_labels[d])].append(loss[0])
     print('loss = {}'.format(loss[0]))
 
 
-# print('correct : {} / {}'.format(correct, len(train_labels)))
 for entry in loss_tracker:
     plt.plot(loss_tracker[entry])
     plt.xlabel('error for label {}'.format(entry))
-    plt.show() 
+    plt.show()
