@@ -16,7 +16,7 @@ features = 28
 all_labels = [np.argmax(j) for j in train_labels]
 loss_tracker = {num: [] for num in all_labels}
 
-U = np.random.randn(hidden_neurons, 28)
+U = np.random.randn(hidden_neurons, features)
 W = np.random.randn(hidden_neurons, hidden_neurons)
 V = np.random.randn(output_classes, hidden_neurons)
 b = np.zeros((hidden_neurons, 1))
@@ -33,7 +33,7 @@ for d in range(len(train_features)):
     loss = 0
     # caches to use during backward pass
     h_cache, grad_loss_o_cache = [], []
-    sequential_image = [train_features[d][:, j].reshape(28, 1) for j in range(28)]
+    sequential_image = [train_features[d][:, j].reshape(features, 1) for j in range(features)]
     print('sample {} / {} ; true label = {} ;'.format(d + 1, len(train_features), np.argmax(train_labels[d])), end=' ')
     # forward pass
     for t in range(time_steps):
