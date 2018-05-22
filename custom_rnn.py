@@ -3,7 +3,7 @@ import conv_utils
 import matplotlib.pyplot as plt
 
 # get data
-mnist_train_data = conv_utils.get_mnist_data(sliced=10000)
+mnist_train_data = conv_utils.get_mnist_data()
 train_features = mnist_train_data[0]
 train_labels = mnist_train_data[1]
 # hyperparameters
