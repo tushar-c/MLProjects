@@ -85,8 +85,10 @@ for d in range(len(train_features)):
     print('loss = {}'.format(loss[0]))
 
 
-for entry in loss_tracker:
-    plt.plot(loss_tracker[entry])
-    plt.xlabel('error for label: {}'.format(entry))
-    plt.show()
+plot = False
+if plot:
+    for entry in loss_tracker:
+        plt.plot(loss_tracker[entry])
+        plt.xlabel('error for label: {}'.format(entry))
+        plt.show()
     
