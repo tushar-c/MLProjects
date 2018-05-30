@@ -1,3 +1,7 @@
+""" A convolutional neural network on the MNIST dataset. Note that the terminology and definitions are taken from the following paper,
+    link: https://pdfs.semanticscholar.org/5d79/11c93ddcb34cac088d99bd0cae9124e5dcd1.pdf """
+
+
 import conv_utils
 import numpy as np
 
@@ -103,6 +107,7 @@ def train(features, labels, conv_layers, kernels, biases, poolings, eta, observe
     return kernels, biases, output_layer_weights, output_layer_biases
 
 
+# here sliced indicates how many data points we want from the whole dataset.
 mnist_train_data = conv_utils.get_mnist_data(sliced=100)
 train_features = mnist_train_data[0]
 train_labels = mnist_train_data[1]
