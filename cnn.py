@@ -107,7 +107,7 @@ def train(features, labels, conv_layers, kernels, biases, poolings, eta, observe
     return kernels, biases, output_layer_weights, output_layer_biases
 
 
-# here sliced indicates how many data points we want from the whole dataset.
+# here sliced indicates how many data points we want from the whole dataset. Default value will use the whole dataset.
 mnist_train_data = conv_utils.get_mnist_data(sliced=100)
 train_features = mnist_train_data[0]
 train_labels = mnist_train_data[1]
