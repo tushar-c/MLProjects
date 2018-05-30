@@ -1,3 +1,8 @@
+""" A Recurrent Neural Network on the MNIST dataset . Note that a Convolutional Neural Network is more suited for this task
+    but here the aim is to understand rather than solve. Each image is 28 x 28 . To feed as input to the RNN, we split it into
+    28 vectors, each being 28 x 1, thereby making each image 'sequential' . """
+
+
 import numpy as np
 import conv_utils
 import matplotlib.pyplot as plt
