@@ -1,4 +1,4 @@
-""" A dynamic feed-forward network, used for binary classificiation on the iris dataset for this particular example. """
+""" A dynamic feed-forward network, used for multi class classificiation on the MNIST dataset for this particular example. """
 
 import conv_utils
 import numpy as np
@@ -33,10 +33,6 @@ def predict(X, w):
 
 def mse(y, y_):
     return np.sum(np.power(y - y_, 2)) / 2
-
-
-def grad_mse(y, y_):
-    return np.sum(y_ - y)
 
 
 def gradient_descent_update(x, grad, eta):
