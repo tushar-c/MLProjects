@@ -43,10 +43,6 @@ def norm(x):
     return np.power(np.sum(np.power(x, 2)), 1 / 2)
 
 
-def relu(x):
-    return max(0, x)
-
-
 def max_proba_index(x):
     return x.index(max(x))
 
