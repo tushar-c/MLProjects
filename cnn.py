@@ -1,5 +1,5 @@
-""" A convolutional neural network on the MNIST dataset. Note that the terminology and definitions are taken from the following paper,
-    link: https://pdfs.semanticscholar.org/5d79/11c93ddcb34cac088d99bd0cae9124e5dcd1.pdf """
+""" A convolutional neural network on the MNIST dataset. Note that the terminology and definitions are taken from the following 
+    paper, link: https://pdfs.semanticscholar.org/5d79/11c93ddcb34cac088d99bd0cae9124e5dcd1.pdf """
 
 
 import conv_utils
