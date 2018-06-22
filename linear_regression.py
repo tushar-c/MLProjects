@@ -5,12 +5,12 @@ import process_data
 # OLS Linear Regression
 def linear_regression(X, Y, X_, Y_):
     # estimate for the weight vector B, can be found by minimizing (y - XB).T * (y - XB)
-    B = np.matmul(np.linalg.inv(np.matmul(X.T, X)), np.matmul(X.T, Y))
+    W = np.matmul(np.linalg.inv(np.matmul(X.T, X)), np.matmul(X.T, Y))
     predictions = []
     # iterate over the test set
     for entry in range(len(X_)):
         # get predicition
-        p = np.matmul(B.T, X_[entry])
+        p = np.matmul(W.T, X_[entry])
         # threshold for binary classification
         if p >= 0.5:
             pred = 1
@@ -20,7 +20,7 @@ def linear_regression(X, Y, X_, Y_):
     predictions = np.array(predictions)
     # compute MSE 
     error = np.sum(np.power(predictions - test_labels, 2)) / len(features)
-    return (B, error, predictions)
+    return (W, error, predictions)
 
 
 # fetch and clean the data
