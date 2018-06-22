@@ -4,7 +4,7 @@ import process_data
 
 # OLS Linear Regression
 def linear_regression(X, Y, X_, Y_):
-    # estimate for the weight vector B, can be found by minimizing (y - XB).T * (y - XB)
+    # estimate for the weight vector W, can be found by minimizing (y - WB).T * (y - WB)
     W = np.matmul(np.linalg.inv(np.matmul(X.T, X)), np.matmul(X.T, Y))
     predictions = []
     # iterate over the test set
