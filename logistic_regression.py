@@ -15,11 +15,12 @@ def train(X, y, w_init, n_iterations):
 	grad_E = np.matmul(X.T, (y_ - y))
 	for n in range(n_iterations):
 		error = cross_entropy_error(y_, labels)
-		print('error at iteration {} = {}'.format(n + 1, error))
+		print('error at iteration {} = {}'.format(n + 1, error[0]))
 		w = newton_raphson(w, H, grad_E)
 		y_ = prepare_predictions(X, w)
 		updated_params = update_matrices(X, y_, y)
-		grad_E, H, R = updated_params[0], updated_params[1], updated_params[2]		
+		grad_E, H, R = updated_params[0], updated_params[1], updated_params[2]
+		
 	return w
 		
 
@@ -63,7 +64,7 @@ def predictions(x, w, classify=False):
 	pred = logistic_sigmoid(linear_comb)
 	if classify:
 		if pred >= 0.5:
-			pred = 1
+				pred = 1
 		else:
 			pred = 0
 	return pred
@@ -99,10 +100,10 @@ features = dataset['data']
 labels = dataset['target']
 labels = labels.reshape(labels.shape[0], 1)
 
-n_iterations = 10
-random_vars = np.array([np.random.normal() for j in range(features.shape[1])])
-random_vars = random_vars.reshape(random_vars.shape[0], 1)
-w_init = random_vars
+n_iterations = 500
+init_array = np.array([0 for j in range(features.shape[1])])
+init_array = init_array.reshape(init_array.shape[0], 1)
+w_init = init_array
 f_train = features[:500]
 l_train = labels[:500]
 f_test = features[500:]
