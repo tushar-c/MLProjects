@@ -1,3 +1,5 @@
+"""Logistic Regression on the  UCI breast cancer dataset. Model trained using Newton-Raphson Method"""
+
 import numpy as np 
 import sklearn.datasets
 
@@ -17,8 +19,7 @@ def train(X, y, w_init, n_iterations):
 		w = newton_raphson(w, H, grad_E)
 		y_ = prepare_predictions(X, w)
 		updated_params = update_matrices(X, y_, y)
-		grad_E, H, R = updated_params[0], updated_params[1], updated_params[2]
-		
+		grad_E, H, R = updated_params[0], updated_params[1], updated_params[2]		
 	return w
 		
 
@@ -62,7 +63,7 @@ def predictions(x, w, classify=False):
 	pred = logistic_sigmoid(linear_comb)
 	if classify:
 		if pred >= 0.5:
-				pred = 1
+			pred = 1
 		else:
 			pred = 0
 	return pred
