@@ -126,4 +126,6 @@ for j in range(f_test.shape[0]):
 print('accuracy = {} %'.format((correct / l_test.shape[0]) * 100))
 
 plt.plot(error_log)
+plt.ylabel("Error")
+plt.xlabel("Iteration")
 plt.show()
