@@ -2,11 +2,13 @@
 
 import numpy as np 
 import sklearn.datasets
+import matplotlib.pyplot as plt
 
 
 def train(X, y, w_init, n_iterations):
 	y_ = prepare_predictions(X, w_init)
 	R = np.zeros((X.shape[0], X.shape[0]))
+	error_log = []
 	for k in range(R.shape[0]):
 		R[k][k] = grad_logistic_sigmoid(y_[k])
 		
@@ -15,13 +17,14 @@ def train(X, y, w_init, n_iterations):
 	grad_E = np.matmul(X.T, (y_ - y))
 	for n in range(n_iterations):
 		error = cross_entropy_error(y_, labels)
+		error_log.append(error)
 		print('error at iteration {} = {}'.format(n + 1, error[0]))
 		w = newton_raphson(w, H, grad_E)
 		y_ = prepare_predictions(X, w)
 		updated_params = update_matrices(X, y_, y)
 		grad_E, H, R = updated_params[0], updated_params[1], updated_params[2]
 		
-	return w
+	return w, error_log
 		
 
 def update_matrices(X, y_, y):
@@ -100,7 +103,7 @@ features = dataset['data']
 labels = dataset['target']
 labels = labels.reshape(labels.shape[0], 1)
 
-n_iterations = 500
+n_iterations = 100
 init_array = np.array([0 for j in range(features.shape[1])])
 init_array = init_array.reshape(init_array.shape[0], 1)
 w_init = init_array
@@ -108,9 +111,19 @@ f_train = features[:500]
 l_train = labels[:500]
 f_test = features[500:]
 l_test = labels[500:]
-w_final = train(f_train, l_train, w_init, n_iterations)	
+train_algorithm = train(f_train, l_train, w_init, n_iterations)	
+w_final = train_algorithm[0]
+error_log = train_algorithm[1]
+error_log = np.array(error_log)
 
+correct = 0
 for j in range(f_test.shape[0]):
 	sample = f_test[j, :]
 	pred = predictions(sample, w_final, classify=True)
-	print('predicted class {} : actual class {}'.format(pred, l_test[j]))
+	if pred == l_test[j]:
+		correct += 1
+
+print('accuracy = {} %'.format((correct / l_test.shape[0]) * 100))
+
+plt.plot(error_log)
+plt.show()
