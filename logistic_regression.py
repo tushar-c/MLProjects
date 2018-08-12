@@ -67,7 +67,7 @@ def predictions(x, w, classify=False):
 	pred = logistic_sigmoid(linear_comb)
 	if classify:
 		if pred >= 0.5:
-				pred = 1
+			pred = 1
 		else:
 			pred = 0
 	return pred
