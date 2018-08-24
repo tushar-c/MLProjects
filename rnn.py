@@ -75,11 +75,11 @@ for d in range(len(train_features)):
         grad_loss_W += np.matmul(diagonal_matrix, np.matmul(prev_layer_grad_loss_h, h_cache[t - 1].T))
         grad_loss_U += np.matmul(diagonal_matrix, np.matmul(prev_layer_grad_loss_h, sequential_image[t].T))
 
-        # gradient clipping to deal with exploding gradients
+        # clip gradients
         for params in [grad_loss_U, grad_loss_W, grad_loss_b, grad_loss_V, grad_loss_c]:
             np.clip(params, -5, 5, out=params)
 
-    # perform adagrad update
+    # AGU
     for param, grad_param, mem in zip([U, W, V, b, c],
                                           [grad_loss_U, grad_loss_W, grad_loss_V, grad_loss_b, grad_loss_c],
                                           [mem_U, mem_W, mem_V, mem_b, mem_c]):
