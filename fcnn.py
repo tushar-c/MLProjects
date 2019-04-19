@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import keras
 from keras.datasets import mnist
+import time
 
 
 def normalize(X):
@@ -99,7 +100,6 @@ def train_net(X, y, X_test, y_test, weights, biases, epochs=12, eta=0.002):
     for e in range(1, epochs + 1):
         epoch_mse = 0
         for t in range(len(X)):
-            print('epoch {} / {} ; sample {} / {}'.format(e, epochs, t + 1, len(X)))
             prediction = forward_prop(X[t], weights, biases)
             activations = prediction[1]
             epoch_mse += mse(np.argmax(y[t]), np.argmax(prediction[0]))
@@ -113,7 +113,7 @@ def train_net(X, y, X_test, y_test, weights, biases, epochs=12, eta=0.002):
         accuracy_list.append(acc)
         hyperparam_tracker.append((acc, weights, biases))
         print('train accuracy = {}%'.format(acc), end=", ")
-        print('epoch mse = {}'.format(epoch_mse))
+        print('epoch mse = {}'.format(epoch_mse / len(X)))
         mse_tracker.append(epoch_mse)
     print('max train accuracy was found to be {}%'.format(max(accuracy_list)))
     accs = accuracy_list.index(max(accuracy_list))
@@ -231,3 +231,4 @@ if __name__ == '__main__':
         plt.xlabel('epochs')
         plt.ylabel('train accuracy over epochs')
         plt.show()
+        
